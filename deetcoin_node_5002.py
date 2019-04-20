@@ -29,7 +29,7 @@ class Blockchain:
         block = {'index': len(self.chain) +1,
                  'timestamp': str(datetime.datetime.now()),
                  'proof': proof,
-                 "previous_hash": previous_hash
+                 "previous_hash": previous_hash,
                  "transactions": self.transactions}
         self.transactions = []
         self.chain.append(block)
@@ -86,9 +86,9 @@ class Blockchain:
         max_length = len(self.chain)
         for node in network:
             response = requests.get(f"http://{node}/get_chain")
-            if response.status_code = 200:
+            if response.status_code == 200:
                 length = response.json()["length"]
-                chain = response.json()["chain]
+                chain = response.json()["chain"]
                 if length > max_length and self.is_chain_valid(chain):
                     max_length = length
                     longest_chain = chain
@@ -114,7 +114,7 @@ def mine_block():
     previous_proof = previous_block['proof']
     proof = blockchain.proof_of_work(previous_proof)
     previous_hash = blockchain.hash(previous_block)
-    transaction = blockchain.add_transaction(sender = node_address, receiver = "Deeter", amount = 1)
+    transaction = blockchain.add_transaction(sender = node_address, receiver = "your mom", amount = 1)
     block = blockchain.create_block(proof, previous_hash)
     response = {'message': 'Congratulations, you just mined a block!',
                 'index': block['index'],
@@ -161,11 +161,10 @@ def add_transaction():
 # Connecting new nodes
 @app.route("/connect_node", methods=["POST"])
 def connect_node():
-    json = request.json()
-    nodes = json.get("nodes")
-    if nodes is None:
+    nodesObj = request.get_json("nodes")
+    if nodesObj is None:
         return "No nodes", 401
-    for node in nodes:
+    for node in nodesObj["nodes"]:
         blockchain.add_node(node)
     response = {"message": "All the nodes are now connected. Deetcoin blockchain now contains these nodes:", 
                 "total_nodes": list(blockchain.nodes)}
@@ -174,18 +173,18 @@ def connect_node():
 # replacing chain with longest chain if needed
 @app.route('/replace_chain', methods=['GET'])
 def replace_chain():
+    print("got here at least")
     is_chain_replaced = blockchain.replace_chain()
+    print(is_chain_replaced)
     if is_chain_replaced:
+        print("first")
         response = {'message': 'The node had different chains so the chain was replaced by the longest one.',
                     "new_chain": blockchain.chain}
     else:
+        print("second")
         response = {'message': "All is normal - the current chain is the longest one.",
                     "current_chain": blockchain.chain}
     return jsonify(response), 200
 
 # run the app
-app.run(host = '0.0.0.0', port = 5000)
-
-
-
-
+app.run(host = '0.0.0.0', port = 5002)
